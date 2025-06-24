@@ -209,7 +209,7 @@
                             :or               {queue                        db/DEFAULT_QUEUE
                                                job-table                    db/DEFAULT_JOB_TABLE
                                                archived-job-table           db/DEFAULT_ARCHIVED_JOB_TABLE
-                                               archive-job!                 db/archive-job
+                                               archive-job!                 db/archive-job!
                                                serializer                   (transit/create-serializer)
                                                uuid-serializer              (pg-uuid/create-serializer)
                                                handler-fn-mode              :default
