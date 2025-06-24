@@ -64,11 +64,11 @@
        serializer for [[proletarian.worker/create-queue-worker]].
    * `:proletarian/clock` – the [[java.time.Clock]] to use for getting the current time. Used in testing. The default is
        [[java.time.Clock/systemUTC]].
-   * `:proletarian.db/enqueue-job!` – optional, overrides the function that enqueues the job into the jobs table."
+   * `:proletarian/enqueue-job!` – optional, overrides the function that enqueues the job into the jobs table."
   [conn job-type payload & {:keys [process-at process-in]
-                            :as config
-                            :proletarian/keys [queue job-table serializer uuid-fn uuid-serializer clock]
-                            :or {queue db/DEFAULT_QUEUE
+                            :proletarian/keys [enqueue-job! queue job-table serializer uuid-fn uuid-serializer clock]
+                            :or {enqueue-job! db/enqueue!
+                                 queue db/DEFAULT_QUEUE
                                  job-table db/DEFAULT_JOB_TABLE
                                  serializer (transit/create-serializer)
                                  uuid-fn (fn [] (UUID/randomUUID))
@@ -76,9 +76,7 @@
                                  clock (Clock/systemUTC)}}]
   {:pre [(instance? Connection conn)]}
   (let [job-id (uuid-fn)
-        now (Instant/now clock)
-        enqueue-job! (or (:proletarian.db/enqueue-job! config)
-                         db/enqueue!)]
+        now (Instant/now clock)]
     (assert (instance? UUID job-id))
     (assert (satisfies? p/Serializer serializer))
     (enqueue-job! conn

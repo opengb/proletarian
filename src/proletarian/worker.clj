@@ -50,7 +50,7 @@
    Returns true if there was a job to be run, and the current thread did not receive an interrupt while handling the
    job. Returns false if there was an interrupt.
    Returns nil if there was no job to be run."
-  [data-source queue handler-fn log config]
+  [data-source queue handler-fn log {:proletarian.db/keys [archive-job!] :as config}]
   (db/with-tx data-source
     (fn [conn]
       (when-let [job (db/get-next-job conn config queue (Instant/now (::clock config)))]
@@ -64,9 +64,7 @@
               :advanced (handler-fn job)
               (handler-fn job-type payload))
             (log ::job-finished)
-            (let [archive-job! (or (:proletarian.db/archive-job! config)
-                                   db/archive-job!)]
-              (archive-job! conn config job-id :success (Instant/now (::clock config))))
+            (archive-job! conn config job-id :success (Instant/now (::clock config)))
             (db/delete-job! conn config job-id)
             (catch InterruptedException _
               (log ::job-interrupted)
@@ -158,7 +156,7 @@
    * `:proletarian/archived-job-table` – which PostgreSQL table to write archived jobs to. The default is
        `proletarian.archived_job`. You should only have to override this if you changed the default table name during
        installation.
-   * `:proletarian.db/archive-job!` – optional, overrides the function that archives a job.
+   * `:proletarian/archive-job!` – optional, overrides the function that archives a job.
    * `:proletarian/serializer` – an implementation of the [[proletarian.protocols/Serializer]] protocol. The default is
        a Transit serializer (see [[proletarian.transit/create-serializer]]). If you override this, you should use the
        same serializer for [[proletarian.job/enqueue!]].
@@ -211,6 +209,7 @@
                             :or               {queue                        db/DEFAULT_QUEUE
                                                job-table                    db/DEFAULT_JOB_TABLE
                                                archived-job-table           db/DEFAULT_ARCHIVED_JOB_TABLE
+                                               archive-job!                 db/archive-job
                                                serializer                   (transit/create-serializer)
                                                uuid-serializer              (pg-uuid/create-serializer)
                                                handler-fn-mode              :default
