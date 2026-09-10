@@ -2,6 +2,9 @@
 
 ## [UNRELEASED](https://github.com/msolli/proletarian/compare/v1.0.89-alpha...main)
 
+### Changed
+* Log events carrying a caught exception now all use the `:exception` key. `::worker/handle-job-exception` and `::worker/handle-job-exception-with-interrupt` already did; `::worker/sql-transient-exception`, `::worker/job-worker-error` and `::worker/queue-worker-shutdown-error` used `:throwable`. Breaking for any logger reading `:throwable` off those three events.
+
 
 ## [1.0.89-alpha](https://github.com/msolli/proletarian/compare/v1.0.86-alpha...1.0.89-alpha) - 2024-11-04
 
