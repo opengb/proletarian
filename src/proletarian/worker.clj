@@ -91,12 +91,12 @@
         (when (process-next-job! data-source queue handler-fn log config)
           (recur))))
     (catch SQLTransientException e
-      (log ::sql-transient-exception {:throwable e}))
+      (log ::sql-transient-exception {:exception e}))
     (catch InterruptedException _
       (log ::worker-interrupted)
       (stop-queue-worker!))
     (catch Throwable e
-      (log ::job-worker-error {:throwable e})
+      (log ::job-worker-error {:exception e})
       ;; Stop polling if error handler returns true
       (when ((::on-polling-error config) e)
         (stop-queue-worker!)))))
@@ -251,7 +251,7 @@
                                        (try
                                          (p/stop! this)
                                          (catch Throwable e
-                                           (log ::queue-worker-shutdown-error {:throwable e}))))
+                                           (log ::queue-worker-shutdown-error {:exception e}))))
                  work! (fn [worker-thread-id]
                          (process-next-jobs! data-source queue handler-fn log stop-queue-worker!
                                              (assoc config
